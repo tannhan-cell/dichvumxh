@@ -38,13 +38,16 @@ function ServiceCard({ service, onSelect }: { service:Service; onSelect:(s:Servi
     <Button variant="ghost" className="service-link" onClick={()=>onSelect(service)}>Khám phá dịch vụ <ArrowUpRight /></Button>
   </article>;
 }
+const NAME_TO_PLATFORM: Record<string,string> = { Facebook:'facebook', TikTok:'tiktok', Instagram:'instagram' };
 function Index() {
   const [menuOpen,setMenuOpen]=useState(false);
-  const [selected,setSelected]=useState<Service | null>(null);
   const [info,setInfo]=useState<'support'|'terms'|null>(null);
+  const [platform,setPlatform]=useState('facebook');
+  const setSelected=(s:Service|null)=>{ if(!s) return; setPlatform(NAME_TO_PLATFORM[s.name] ?? 'unlock'); document.getElementById('dat-don')?.scrollIntoView({behavior:'smooth'}); };
   return <>
+    <AnnouncementBar />
     <header className="site-header"><div className="page-shell header-inner"><Brand />
-      <nav className="desktop-nav" aria-label="Điều hướng chính"><a className="active" href="#home">Trang chủ</a><a href="#tuong-tac">Dịch vụ tương tác</a><a href="#mo-khoa">Mở khóa tài khoản</a></nav>
+      <nav className="desktop-nav" aria-label="Điều hướng chính"><a className="active" href="#home">Trang chủ</a><a href="#dat-don">Đặt đơn</a><a href="#tuong-tac">Dịch vụ tương tác</a><a href="#mo-khoa">Mở khóa tài khoản</a><Link to="/tra-cuu">Tra cứu đơn</Link></nav>
       <div className="header-actions"><Button variant="premium" className="header-consult" onClick={()=>setInfo('support')}><MessageCircle /> Tư vấn ngay <ArrowUpRight /></Button><Button variant="ghost" size="icon" className="mobile-menu-button" aria-label={menuOpen?'Đóng menu':'Mở menu'} aria-expanded={menuOpen} onClick={()=>setMenuOpen(!menuOpen)}>{menuOpen?<X />:<Menu />}</Button></div>
     </div>{menuOpen&&<nav className="mobile-nav" aria-label="Điều hướng di động">{[['#home','Trang chủ'],['#tuong-tac','Dịch vụ tương tác'],['#mo-khoa','Mở khóa tài khoản']].map(([href,label])=><a key={href} href={href} onClick={()=>setMenuOpen(false)}>{label}</a>)}<Button variant="premium" onClick={()=>{setMenuOpen(false);setInfo('support');}}>Tư vấn ngay <ArrowUpRight /></Button></nav>}</header>
     <main>
