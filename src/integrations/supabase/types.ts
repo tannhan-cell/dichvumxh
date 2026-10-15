@@ -47,12 +47,14 @@ export type Database = {
           id: string
           link: string
           note: string | null
+          paid_by_balance: boolean
           platform: string
           quantity: number
           service_id: string | null
           service_name: string
           status: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           amount: number
@@ -62,12 +64,14 @@ export type Database = {
           id?: string
           link: string
           note?: string | null
+          paid_by_balance?: boolean
           platform: string
           quantity: number
           service_id?: string | null
           service_name: string
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           amount?: number
@@ -77,12 +81,14 @@ export type Database = {
           id?: string
           link?: string
           note?: string | null
+          paid_by_balance?: boolean
           platform?: string
           quantity?: number
           service_id?: string | null
           service_name?: string
           status?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -93,6 +99,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          balance: number
+          created_at: string
+          discount_percent: number
+          email: string | null
+          id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          discount_percent?: number
+          email?: string | null
+          id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          discount_percent?: number
+          email?: string | null
+          id?: string
+        }
+        Relationships: []
       }
       services: {
         Row: {
@@ -156,6 +186,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deduct_balance: {
+        Args: { _amount: number; _uid: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
