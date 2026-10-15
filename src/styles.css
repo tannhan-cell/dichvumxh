@@ -42,6 +42,17 @@
   --cyan: oklch(0.83 0.14 185);
   --hero-shade: linear-gradient(90deg, var(--background) 0%, color-mix(in oklch, var(--background) 94%, transparent) 22%, color-mix(in oklch, var(--background) 35%, transparent) 52%, transparent 75%);
 }
+html.light {
+  --background: oklch(0.975 0.006 130);
+  --foreground: oklch(0.2 0.02 160);
+  --primary: oklch(0.58 0.17 135);
+  --primary-foreground: oklch(0.99 0.01 130);
+  --secondary: oklch(0.93 0.01 140);
+  --card: oklch(1 0 0);
+  --muted-foreground: oklch(0.48 0.015 150);
+  --border: oklch(0.86 0.012 150);
+  --hero-shade: linear-gradient(90deg, var(--background) 0%, color-mix(in oklch, var(--background) 92%, transparent) 30%, color-mix(in oklch, var(--background) 45%, transparent) 58%, transparent 80%);
+}
 @layer base {
   * { border-color: var(--border); box-sizing: border-box; }
   body { margin:0; background:var(--background); color:var(--foreground); font-family:var(--font-sans); font-size:14px; line-height:1.65; }

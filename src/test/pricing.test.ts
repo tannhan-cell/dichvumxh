@@ -12,3 +12,13 @@ describe("pricing", () => {
     expect(url).toContain("addInfo=SMABC123");
   });
 });
+
+import { memberAmount } from "@/lib/pricing";
+describe("member pricing", () => {
+  it("applies member discount percent", () => {
+    expect(memberAmount(25, 1000, 10)).toBe(22500);
+  });
+  it("no discount = full price", () => {
+    expect(memberAmount(25, 1000, 0)).toBe(25000);
+  });
+});
