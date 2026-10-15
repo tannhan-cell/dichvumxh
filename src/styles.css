@@ -149,3 +149,20 @@
   .footer-top { align-items:flex-start; flex-direction:column; gap:10px; } .footer-bottom { flex-direction:column; gap:10px; }
 }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*:before,*:after { animation:none!important; transition:none!important; } }
+.announce-bar { display:flex; align-items:center; gap:12px; padding:9px 20px; background:var(--primary); color:var(--primary-foreground); font-size:13px; font-weight:600; overflow:hidden; }
+.announce-track { overflow:hidden; flex:1; }
+.announce-move { display:flex; gap:80px; white-space:nowrap; width:max-content; animation:announce 28s linear infinite; }
+@keyframes announce { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+.shop-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px; }
+.shop-tabs button { display:flex; align-items:center; gap:8px; padding:10px 18px; border-radius:999px; border:1px solid var(--border); background:var(--card); color:var(--muted-foreground); font-size:13px; font-weight:600; transition:all .2s; cursor:pointer; }
+.shop-tabs button:hover { color:var(--foreground); border-color:color-mix(in oklch,var(--primary) 50%,transparent); }
+.shop-tabs button.active { background:var(--primary); color:var(--primary-foreground); border-color:var(--primary); box-shadow:0 8px 30px -10px color-mix(in oklch,var(--primary) 70%,transparent); }
+.shop-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.shop-item { text-align:left; display:flex; flex-direction:column; justify-content:space-between; gap:14px; padding:18px; border-radius:12px; border:1px solid var(--border); background:linear-gradient(160deg,var(--card),var(--background)); color:var(--foreground); cursor:pointer; transition:transform .2s,border-color .2s; }
+.shop-item:hover { transform:translateY(-3px); border-color:color-mix(in oklch,var(--primary) 60%,transparent); }
+.shop-name { font-weight:700; font-size:14px; }
+.shop-badge { font-size:10px; font-weight:800; padding:3px 8px; border-radius:6px; background:color-mix(in oklch,var(--rose) 22%,transparent); color:var(--rose); }
+.shop-price { font-size:18px; font-weight:800; color:var(--primary); }
+.shop-buy { display:flex; align-items:center; gap:4px; font-size:12px; font-weight:700; color:var(--primary); }
+@media (max-width:900px) { .shop-grid { grid-template-columns:1fr 1fr; } }
+@media (max-width:600px) { .shop-grid { grid-template-columns:1fr; } .shop-tabs button { padding:8px 13px; font-size:12px; } }

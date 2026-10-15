@@ -11,3 +11,6 @@
 
 - Keep SocialMedia presentation styles and semantic color tokens in src/styles.css, so every service view shares the same visual system.
 - Service selection and informational dialogs are frontend-only; do not imply consultation requests are sent without a connected contact channel.
+- Guest orders are created and looked up only through server functions in src/lib/orders.functions.ts (admin client, server-side pricing), because the orders table has no public RLS access.
+- Admin rights come from public.user_roles via has_role; the first account ever registered becomes admin by trigger, so later signups get no access.
+- Order alerts go to Telegram through the connector gateway from server code only.
