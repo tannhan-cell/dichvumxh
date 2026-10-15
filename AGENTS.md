@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep SocialMedia presentation styles and semantic color tokens in src/styles.css, so every service view shares the same visual system.
+- Service selection and informational dialogs are frontend-only; do not imply consultation requests are sent without a connected contact channel.
