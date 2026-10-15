@@ -1,4 +1,4 @@
 # SocialMedia upgrade
-- [ ] Create premium design system and visual layout.
-- [ ] Preserve Vietnamese services and connect navigation and service details.
-- [ ] Verify appearance and interactions on desktop and mobile.
+- [x] Create premium design system and visual layout.
+- [x] Preserve Vietnamese services and connect navigation and service details.
+- [x] Verify appearance and interactions on desktop and mobile.
