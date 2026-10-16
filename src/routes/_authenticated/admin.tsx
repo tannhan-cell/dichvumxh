@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { LogOut, Megaphone, Save, Trash2 } from "lucide-react";
+import { LogOut, Megaphone, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLATFORMS, STATUS_LABEL, formatVnd } from "@/lib/pricing";
+import { setOrderStatus } from "@/lib/orders.functions";
 import type { Database } from "@/integrations/supabase/types";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type Svc = Database["public"]["Tables"]["services"]["Row"];
 type Ann = Database["public"]["Tables"]["announcements"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [
@@ -48,12 +51,13 @@ function Admin() {
         <Button variant="glass" onClick={logout}><LogOut /> Đăng xuất</Button>
       </div>
       <Tabs defaultValue="dash">
-        <TabsList className="mb-6 flex-wrap"><TabsTrigger value="dash">Tổng quan</TabsTrigger><TabsTrigger value="orders">Đơn hàng</TabsTrigger><TabsTrigger value="prices">Bảng giá</TabsTrigger><TabsTrigger value="ann">Thông báo</TabsTrigger></TabsList>
+        <TabsList className="mb-6 flex-wrap"><TabsTrigger value="dash">Tổng quan</TabsTrigger><TabsTrigger value="orders">Đơn hàng</TabsTrigger><TabsTrigger value="prices">Bảng giá</TabsTrigger><TabsTrigger value="members">Thành viên</TabsTrigger><TabsTrigger value="ann">Thông báo</TabsTrigger></TabsList>
         <OrdersData>{(orders, reload) => (<>
           <TabsContent value="dash"><Dashboard orders={orders} /></TabsContent>
           <TabsContent value="orders"><Orders orders={orders} reload={reload} /></TabsContent>
         </>)}</OrdersData>
         <TabsContent value="prices"><Prices /></TabsContent>
+        <TabsContent value="members"><Members /></TabsContent>
         <TabsContent value="ann"><Announcements /></TabsContent>
       </Tabs>
     </main>
@@ -114,10 +118,16 @@ function Dashboard({ orders }: { orders: Order[] }) {
 
 function Orders({ orders, reload }: { orders: Order[]; reload: () => void }) {
   const [filter, setFilter] = useState("all");
+  const updateStatus = useServerFn(setOrderStatus);
   const list = filter === "all" ? orders : orders.filter((o) => o.status === filter);
   async function setStatus(id: string, status: string) {
-    const { error } = await supabase.from("orders").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Đã cập nhật"); reload(); }
+    try {
+      await updateStatus({ data: { id, status: status as "pending" | "paid" | "running" | "completed" | "cancelled" } });
+      toast.success("Đã cập nhật & gửi thông báo Telegram");
+      reload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Không cập nhật được đơn");
+    }
   }
   return (
     <div>
