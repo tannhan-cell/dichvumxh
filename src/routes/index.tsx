@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { AnnouncementBar } from '@/components/AnnouncementBar';
 import { ShopSection } from '@/components/ShopSection';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { ContactLinks } from '@/components/ContactLinks';
 import { useState } from 'react';
 import { ArrowUpRight, ArrowRight, Zap, ShieldCheck, LockKeyhole, Check, Menu, X, MessageCircle, Facebook, Instagram, Music2, Youtube, Sparkles, BadgeCheck, Lock, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -50,7 +52,7 @@ function Index() {
     <AnnouncementBar />
     <header className="site-header"><div className="page-shell header-inner"><Brand />
       <nav className="desktop-nav" aria-label="Điều hướng chính"><a className="active" href="#home">Trang chủ</a><a href="#dat-don">Đặt đơn</a><a href="#tuong-tac">Dịch vụ tương tác</a><a href="#mo-khoa">Mở khóa tài khoản</a><Link to="/tra-cuu">Tra cứu đơn</Link></nav>
-      <div className="header-actions"><Button variant="premium" className="header-consult" onClick={()=>setInfo('support')}><MessageCircle /> Tư vấn ngay <ArrowUpRight /></Button><Button variant="ghost" size="icon" className="mobile-menu-button" aria-label={menuOpen?'Đóng menu':'Mở menu'} aria-expanded={menuOpen} onClick={()=>setMenuOpen(!menuOpen)}>{menuOpen?<X />:<Menu />}</Button></div>
+      <div className="header-actions"><ThemeToggle /><Button variant="premium" className="header-consult" onClick={()=>setInfo('support')}><MessageCircle /> Tư vấn ngay <ArrowUpRight /></Button><Button variant="ghost" size="icon" className="mobile-menu-button" aria-label={menuOpen?'Đóng menu':'Mở menu'} aria-expanded={menuOpen} onClick={()=>setMenuOpen(!menuOpen)}>{menuOpen?<X />:<Menu />}</Button></div>
     </div>{menuOpen&&<nav className="mobile-nav" aria-label="Điều hướng di động">{[['#home','Trang chủ'],['#dat-don','Đặt đơn'],['#tuong-tac','Dịch vụ tương tác'],['#mo-khoa','Mở khóa tài khoản']].map(([href,label])=><a key={href} href={href} onClick={()=>setMenuOpen(false)}>{label}</a>)}<Button variant="premium" onClick={()=>{setMenuOpen(false);setInfo('support');}}>Tư vấn ngay <ArrowUpRight /></Button></nav>}</header>
     <main>
       <section className="hero" id="home"><img className="hero-art" src={heroImage} width={1536} height={1024} alt="Biểu tượng Facebook, TikTok, Instagram và khiên bảo mật bằng kính cao cấp" fetchPriority="high" /><div className="page-shell hero-inner">
