@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { LogOut, Megaphone, Save, Trash2 } from "lucide-react";
+import { LogOut, Megaphone, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLATFORMS, STATUS_LABEL, formatVnd } from "@/lib/pricing";
+import { setOrderStatus } from "@/lib/orders.functions";
 import type { Database } from "@/integrations/supabase/types";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type Svc = Database["public"]["Tables"]["services"]["Row"];
 type Ann = Database["public"]["Tables"]["announcements"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [
@@ -48,12 +51,13 @@ function Admin() {
         <Button variant="glass" onClick={logout}><LogOut /> Đăng xuất</Button>
       </div>
       <Tabs defaultValue="dash">
-        <TabsList className="mb-6 flex-wrap"><TabsTrigger value="dash">Tổng quan</TabsTrigger><TabsTrigger value="orders">Đơn hàng</TabsTrigger><TabsTrigger value="prices">Bảng giá</TabsTrigger><TabsTrigger value="ann">Thông báo</TabsTrigger></TabsList>
+        <TabsList className="mb-6 flex-wrap"><TabsTrigger value="dash">Tổng quan</TabsTrigger><TabsTrigger value="orders">Đơn hàng</TabsTrigger><TabsTrigger value="prices">Bảng giá</TabsTrigger><TabsTrigger value="members">Thành viên</TabsTrigger><TabsTrigger value="ann">Thông báo</TabsTrigger></TabsList>
         <OrdersData>{(orders, reload) => (<>
           <TabsContent value="dash"><Dashboard orders={orders} /></TabsContent>
           <TabsContent value="orders"><Orders orders={orders} reload={reload} /></TabsContent>
         </>)}</OrdersData>
         <TabsContent value="prices"><Prices /></TabsContent>
+        <TabsContent value="members"><Members /></TabsContent>
         <TabsContent value="ann"><Announcements /></TabsContent>
       </Tabs>
     </main>
@@ -114,10 +118,16 @@ function Dashboard({ orders }: { orders: Order[] }) {
 
 function Orders({ orders, reload }: { orders: Order[]; reload: () => void }) {
   const [filter, setFilter] = useState("all");
+  const updateStatus = useServerFn(setOrderStatus);
   const list = filter === "all" ? orders : orders.filter((o) => o.status === filter);
   async function setStatus(id: string, status: string) {
-    const { error } = await supabase.from("orders").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Đã cập nhật"); reload(); }
+    try {
+      await updateStatus({ data: { id, status: status as "pending" | "paid" | "running" | "completed" | "cancelled" } });
+      toast.success("Đã cập nhật & gửi thông báo Telegram");
+      reload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Không cập nhật được đơn");
+    }
   }
   return (
     <div>
@@ -161,14 +171,28 @@ function Prices() {
     const { error } = await supabase.from("services").update({ name: s.name, unit_price: s.unit_price, min_qty: s.min_qty, max_qty: s.max_qty, badge: s.badge || null, active: s.active }).eq("id", s.id);
     if (error) toast.error(error.message); else toast.success(`Đã lưu ${s.name}`);
   }
+  async function add(platform: string) {
+    const maxSort = Math.max(0, ...rows.filter((r) => r.platform === platform).map((r) => r.sort));
+    const { error } = await supabase.from("services").insert({ platform, name: "Dịch vụ mới", unit_price: 0, min_qty: 100, max_qty: 100000, sort: maxSort + 1 });
+    if (error) toast.error(error.message); else { toast.success("Đã thêm mục mới — sửa tên và giá rồi bấm Lưu"); load(); }
+  }
+  async function remove(s: Svc) {
+    if (!window.confirm(`Xóa hẳn "${s.name}"? Các đơn cũ vẫn giữ nguyên tên dịch vụ.`)) return;
+    const { error } = await supabase.from("services").delete().eq("id", s.id);
+    if (error) toast.error("Không xóa được (dịch vụ đã gắn với đơn hàng) — hãy tắt Hiện để ẩn thay");
+    else { toast.success(`Đã xóa ${s.name}`); load(); }
+  }
   return (
     <div className="grid gap-8">
       {PLATFORMS.map((p) => (
         <div key={p.id}>
-          <h3 className="mb-3 font-bold">{p.label}</h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="font-bold">{p.label}</h3>
+            <Button size="sm" variant="glass" onClick={() => add(p.id)}><Plus /> Thêm mục</Button>
+          </div>
           <div className="grid gap-2">
             {rows.filter((r) => r.platform === p.id).map((s) => (
-              <div key={s.id} className="grid grid-cols-2 items-center gap-2 rounded-lg border border-border bg-card p-3 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto_auto]">
+              <div key={s.id} className="grid grid-cols-2 items-center gap-2 rounded-lg border border-border bg-card p-3 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto_auto_auto]">
                 <Input value={s.name} onChange={(e) => edit(s.id, { name: e.target.value })} className="col-span-2 md:col-span-1" />
                 <label className="text-xs text-muted-foreground">Giá/1 (đ)<Input type="number" value={s.unit_price} onChange={(e) => edit(s.id, { unit_price: Number(e.target.value) })} /></label>
                 <label className="text-xs text-muted-foreground">Tối thiểu<Input type="number" value={s.min_qty} onChange={(e) => edit(s.id, { min_qty: Number(e.target.value) })} /></label>
@@ -176,11 +200,40 @@ function Prices() {
                 <label className="text-xs text-muted-foreground">Nhãn<Input value={s.badge ?? ""} onChange={(e) => edit(s.id, { badge: e.target.value })} /></label>
                 <label className="flex items-center gap-2 text-xs"><Switch checked={s.active} onCheckedChange={(v) => edit(s.id, { active: v })} /> Hiện</label>
                 <Button size="sm" variant="premium" onClick={() => save(s)}><Save /> Lưu</Button>
+                <Button size="icon" variant="ghost" aria-label={`Xóa ${s.name}`} onClick={() => remove(s)}><Trash2 /></Button>
               </div>
             ))}
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function Members() {
+  const [rows, setRows] = useState<Profile[]>([]);
+  const load = () => supabase.from("profiles").select("*").order("created_at", { ascending: false }).then(({ data }) => setRows(data ?? []));
+  useEffect(() => { load(); }, []);
+  const edit = (id: string, patch: Partial<Profile>) => setRows((r) => r.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+  async function save(p: Profile) {
+    const { error } = await supabase.from("profiles").update({ balance: p.balance, discount_percent: p.discount_percent }).eq("id", p.id);
+    if (error) toast.error(error.message); else toast.success(`Đã lưu ${p.email}`);
+  }
+  return (
+    <div className="grid gap-3">
+      <p className="text-sm text-muted-foreground">Nạp tiền cho thành viên bằng cách nhập số dư mới (sau khi nhận chuyển khoản). Giảm giá (%) áp dụng cho mọi đơn thành viên thanh toán bằng số dư.</p>
+      {rows.map((p) => (
+        <div key={p.id} className="grid grid-cols-2 items-center gap-2 rounded-lg border border-border bg-card p-3 md:grid-cols-[2fr_1fr_1fr_auto]">
+          <div className="col-span-2 md:col-span-1">
+            <p className="text-sm font-semibold">{p.email}</p>
+            <p className="text-xs text-muted-foreground">Tham gia {new Date(p.created_at).toLocaleDateString("vi-VN")}</p>
+          </div>
+          <label className="text-xs text-muted-foreground">Số dư (đ)<Input type="number" value={p.balance} onChange={(e) => edit(p.id, { balance: Number(e.target.value) })} /></label>
+          <label className="text-xs text-muted-foreground">Giảm giá (%)<Input type="number" min={0} max={100} value={p.discount_percent} onChange={(e) => edit(p.id, { discount_percent: Number(e.target.value) })} /></label>
+          <Button size="sm" variant="premium" onClick={() => save(p)}><Save /> Lưu</Button>
+        </div>
+      ))}
+      {!rows.length && <p className="p-8 text-center text-muted-foreground">Chưa có thành viên đăng ký.</p>}
     </div>
   );
 }
