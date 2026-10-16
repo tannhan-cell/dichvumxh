@@ -2,3 +2,10 @@
 - [x] Create premium design system and visual layout.
 - [x] Preserve Vietnamese services and connect navigation and service details.
 - [x] Verify appearance and interactions on desktop and mobile.
+- [x] Admin: add/delete service rows in price table.
+- [x] Admin: order status change notifies Telegram (via setOrderStatus server fn).
+- [x] Admin: members tab (list registered members, edit balance + discount %).
+- [x] Members: pay by balance in order dialog (no QR).
+- [x] Dark/light theme toggle on homepage header.
+- [x] Admin contact links (Facebook, Telegram @kyretia, Zalo 0392733577) in support dialog.
+- [ ] Verify build + run tests; visual check in preview.
