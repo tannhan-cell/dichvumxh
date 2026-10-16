@@ -8,4 +8,4 @@
 - [x] Members: pay by balance in order dialog (no QR).
 - [x] Dark/light theme toggle on homepage header.
 - [x] Admin contact links (Facebook, Telegram @kyretia, Zalo 0392733577) in support dialog.
-- [ ] Verify build + run tests; visual check in preview.
+- [x] Verify build + run tests; visual check in preview.
